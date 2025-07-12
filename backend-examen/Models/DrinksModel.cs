@@ -1,6 +1,6 @@
 namespace backend_examen.Models
 {
-    public class Drink
+    public class DrinksModel
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
