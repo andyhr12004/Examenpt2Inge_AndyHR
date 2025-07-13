@@ -2,39 +2,46 @@ namespace backend_examen.Repository
 {
     public class CoinRepository
     {
-        private int _coins500 = 20;
-        private int _coins100 = 30;
-        private int _coins50 = 50;
-        private int _coins25 = 25;
-
-        public bool TryGiveChange(int change, out int actualChange)
+        private Dictionary<int, int> _coins = new()
         {
-            int remaining = change;
-            int used500 = Math.Min(remaining / 500, _coins500);
-            remaining -= used500 * 500;
+            { 500, 20 },
+            { 100, 30 },
+            { 50, 50 },
+            { 25, 25 }
+        };
 
-            int used100 = Math.Min(remaining / 100, _coins100);
-            remaining -= used100 * 100;
 
-            int used50 = Math.Min(remaining / 50, _coins50);
-            remaining -= used50 * 50;
-
-            int used25 = Math.Min(remaining / 25, _coins25);
-            remaining -= used25 * 25;
-
-            if (remaining == 0)
+       public bool TryGiveChange(int change, out int finalChange, out Dictionary<int, int>? breakdown)
             {
-                _coins500 -= used500;
-                _coins100 -= used100;
-                _coins50 -= used50;
-                _coins25 -= used25;
+                breakdown = new();
+                finalChange = 0;
 
-                actualChange = change;
-                return true;
+                var coins = new[] { 500, 100, 50, 25 };
+                var originalState = new Dictionary<int, int>(_coins);
+
+                foreach (var coin in coins)
+                {
+                    int needed = change / coin;
+                    int available = _coins.ContainsKey(coin) ? _coins[coin] : 0;
+                    int toUse = Math.Min(needed, available);
+
+                    if (toUse > 0)
+                    {
+                        _coins[coin] -= toUse;
+                        change -= toUse * coin;
+                        breakdown[coin] = toUse;
+                    }
+                }
+
+                if (change == 0)
+                {
+                    finalChange = breakdown.Sum(x => x.Key * x.Value);
+                    return true;
+                }
+
+                _coins = new Dictionary<int, int>(originalState);
+                breakdown = null;
+                return false;
             }
-
-            actualChange = 0;
-            return false;
-        }
     }
 }

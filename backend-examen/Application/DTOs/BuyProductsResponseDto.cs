@@ -6,5 +6,6 @@ namespace backend_examen.Application.DTOs
         public string Message { get; set; } = "";
         public int Change { get; set; }
         public bool OutOfService { get; set; }
+        
     }
 }

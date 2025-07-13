@@ -39,8 +39,20 @@
         <button @click="checkout" class="checkout-button">
           Confirmar compra
         </button>
+
+        <!-- 🟢 NUEVO: Mostrar vuelto y desglose -->
+        <div v-if="changeInfo" class="change-result">
+          <h3>Su vuelto es ₡{{ changeInfo.change }}</h3>
+          <p>Desglose:</p>
+          <ul>
+            <li v-for="(qty, coin) in changeInfo.breakdown" :key="coin">
+              {{ qty }} moneda{{ qty > 1 ? 's' : '' }} de ₡{{ coin }}
+            </li>
+          </ul>
+        </div>
       </aside>
     </div>
+
     <div class="money-input">
       <h2>Insertar dinero</h2>
       <div class="money-buttons">
@@ -55,7 +67,6 @@
   </div>
 </template>
 
-
 <script>
 import { getAvailableDrinks, buyDrinkById } from '@/services/beverageService';
 
@@ -66,6 +77,7 @@ export default {
       cart: {},
       insertedMoney: 0,
       processing: false,
+      changeInfo: null, // 🟢 NUEVO: estado para mostrar el vuelto
     };
   },
   computed: {
@@ -135,15 +147,22 @@ export default {
 
       try {
         const response = await buyDrinkById({
+          
           drinkId: parseInt(drinkId),
           quantity,
           insertedMoney: this.insertedMoney
         });
+        console.log('RESPUESTA DEL BACKEND:', response);
 
-        alert(`Compra realizada con éxito. Su vuelto es ₡${response.change}`);
-        this.cart = {};
-        this.insertedMoney = 0;
-        await this.loadDrinks();
+        if (response.success) {
+          this.changeInfo = {
+            change: response.change,
+            breakdown: response.changeBreakdown || {}
+          };
+            alert('✅ Compra realizada con éxito');
+        } else {
+          alert(response.message || 'La compra no fue exitosa.');
+        }
       } catch (error) {
         if (error.response?.status === 503) {
           alert('⚠ Fuera de servicio: no hay cambio disponible.');
@@ -151,7 +170,10 @@ export default {
           alert(error.response?.data?.message || 'Error al procesar la compra.');
         }
       } finally {
+        this.cart = {};
+        this.insertedMoney = 0;
         this.processing = false;
+        await this.loadDrinks();
       }
     }
   }
