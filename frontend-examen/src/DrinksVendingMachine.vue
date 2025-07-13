@@ -40,7 +40,7 @@
           Confirmar compra
         </button>
 
-        <!-- 🟢 NUEVO: Mostrar vuelto y desglose -->
+       
         <div v-if="changeInfo" class="change-result">
           <h3>Su vuelto es ₡{{ changeInfo.change }}</h3>
           <p>Desglose:</p>
@@ -77,7 +77,7 @@ export default {
       cart: {},
       insertedMoney: 0,
       processing: false,
-      changeInfo: null, // 🟢 NUEVO: estado para mostrar el vuelto
+      changeInfo: null, 
     };
   },
   computed: {
