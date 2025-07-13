@@ -11,6 +11,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<VendingMachineService>();
 builder.Services.AddTransient<GetBeveragesQuery>();
 builder.Services.AddTransient<BuyBeverageCommand>();
+builder.Services.AddSingleton<CoinRepository>();
+
 
 
 
