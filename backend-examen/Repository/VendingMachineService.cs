@@ -1,6 +1,7 @@
-using backend_examen.Models;
+using backend_examen.Domain;
 
-namespace backend_examen.Application.Services
+
+namespace backend_examen.Repository
 {
     public class VendingMachineService
     {

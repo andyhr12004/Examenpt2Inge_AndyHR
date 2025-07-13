@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using backend_examen.Application.Services;
-using backend_examen.Models;
+using backend_examen.Repository;
+using backend_examen.Domain;
+using backend_examen.API;
 
-namespace backend_examen.Controllers
+
+
+namespace backend_examen.API
 {
     [ApiController]
     [Route("api/beveragemachine")]

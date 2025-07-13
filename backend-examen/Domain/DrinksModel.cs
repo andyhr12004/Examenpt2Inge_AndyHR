@@ -1,4 +1,4 @@
-namespace backend_examen.Models
+namespace backend_examen.Domain
 {
     public class DrinksModel
     {

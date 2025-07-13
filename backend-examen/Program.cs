@@ -1,5 +1,6 @@
-using backend_examen.Application.Services;
+using backend_examen.API;
 using Microsoft.OpenApi.Models;
+using backend_examen.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
