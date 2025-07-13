@@ -4,5 +4,6 @@ namespace backend_examen.Application.DTOs
     {
         public int DrinkId { get; set; }
         public int Quantity { get; set; }
+        public int InsertedMoney { get; set; }
     }
 }
