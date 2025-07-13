@@ -1,12 +1,17 @@
 using backend_examen.API;
 using Microsoft.OpenApi.Models;
 using backend_examen.Repository;
+using backend_examen.Application;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<VendingMachineService>();
+builder.Services.AddTransient<GetBeveragesQuery>();
+builder.Services.AddTransient<BuyBeverageCommand>();
+
 
 
 builder.Services.AddEndpointsApiExplorer();

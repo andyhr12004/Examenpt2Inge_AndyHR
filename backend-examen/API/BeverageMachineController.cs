@@ -1,37 +1,41 @@
 using Microsoft.AspNetCore.Mvc;
-using backend_examen.Repository;
-using backend_examen.Domain;
-using backend_examen.API;
-
-
+using backend_examen.Application;           
+using backend_examen.Application.DTOs;     
+using backend_examen.Domain;              
+using System.Collections.Generic;
 
 namespace backend_examen.API
 {
     [ApiController]
-    [Route("api/beveragemachine")]
+    [Route("api/vendingmachine")]
     public class BeverageMachineController : ControllerBase
     {
-        private readonly VendingMachineService _vendingService;
+        private readonly GetBeveragesQuery _getQuery;
+        private readonly BuyBeverageCommand _buyCommand;
 
-        public BeverageMachineController(VendingMachineService vendingService)
+        public BeverageMachineController(
+            GetBeveragesQuery getQuery,
+            BuyBeverageCommand buyCommand)
         {
-            _vendingService = vendingService;
+            _getQuery   = getQuery;
+            _buyCommand = buyCommand;
         }
 
         [HttpGet("products")]
         public ActionResult<List<DrinksModel>> GetProducts()
         {
-            return _vendingService.GetAvailableDrinks();
+            var drinks = _getQuery.Execute();
+            return Ok(drinks);
         }
 
-       [HttpPost("buy/{id}")]
-        public IActionResult BuyDrink(int id)
+        [HttpPost("buy")]
+        public ActionResult<BuyProductsResponseDto> BuyDrink([FromBody] BuyRequestDto dto)
         {
-            var result = _vendingService.BuyDrink(id);
-            if (!result)
-                return NotFound("Refresco no encontrado o agotado.");
+            var result = _buyCommand.Execute(dto.DrinkId, dto.Quantity);
+            if (!result.Success)
+                return BadRequest(result);
 
-            return Ok();
+            return Ok(result);
         }
     }
 }

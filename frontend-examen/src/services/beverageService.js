@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'https://localhost:7107/api/beveragemachine';
+const API_BASE = 'https://localhost:7107/api/vendingmachine'; 
 
 export const getAvailableDrinks = async () => {
   const response = await axios.get(`${API_BASE}/products`);
