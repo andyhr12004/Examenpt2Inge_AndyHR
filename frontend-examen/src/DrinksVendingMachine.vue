@@ -1,8 +1,7 @@
 <template>
   <div class="vending-machine">
-    <h1>Refrescos disponibles</h1>
+    <h1>Máquina expendedora</h1>
 
-    <!-- Aplica grid-layout sólo si hasCart es true -->
     <div class="content" :class="{ 'grid-layout': hasCart }">
       <div class="drinks-grid">
         <div
@@ -20,7 +19,7 @@
             <p class="drink-price">₡ {{ drink.price }}</p>
             <p class="drink-qty">Cantidad Disponible: {{ drink.quantity }}</p>
             <button @click="addToCart(drink.id)" class="buy-button">
-              Comprar
+              Agregar
             </button>
             <p v-if="cart[drink.id] !== undefined" class="selected-qty">
               Seleccionados: {{ cart[drink.id] }}
@@ -30,7 +29,7 @@
       </div>
 
       <aside class="cart-summary" v-if="hasCart">
-        <h2>Carrito de Compra</h2>
+        <h2>Lista de compra</h2>
         <ul>
           <li v-for="(qty, id) in cart" :key="id">
             {{ findName(id) }} × {{ qty }} → ₡ {{ findPrice(id) * qty }}
@@ -42,8 +41,20 @@
         </button>
       </aside>
     </div>
+    <div class="money-input">
+      <h2>Insertar dinero</h2>
+      <div class="money-buttons">
+        <button @click="insertMoney(25)">₡25</button>
+        <button @click="insertMoney(50)">₡50</button>
+        <button @click="insertMoney(100)">₡100</button>
+        <button @click="insertMoney(500)">₡500</button>
+        <button @click="insertMoney(1000)">₡1000 (billete)</button>
+      </div>
+      <p><strong>Total ingresado:</strong> ₡{{ insertedMoney }}</p>
+    </div>
   </div>
 </template>
+
 
 <script>
 import { getAvailableDrinks, buyDrinkById } from '@/services/beverageService';
@@ -52,7 +63,8 @@ export default {
   data() {
     return {
       drinks: [],
-      cart: {},      
+      cart: {},
+      insertedMoney: 0,
       processing: false,
     };
   },
@@ -91,7 +103,7 @@ export default {
       const available = this.drinks.find(x => x.id === id)?.quantity || 0;
       const current = this.cart[id] || 0;
       if (current < available) {
-            this.cart[id] = current + 1;
+        this.cart[id] = current + 1;
       } else {
         alert('No puedes seleccionar más unidades que las disponibles.');
       }
@@ -104,19 +116,40 @@ export default {
       const d = this.drinks.find(x => x.id === +id);
       return d ? d.price : 0;
     },
+    insertMoney(amount) {
+      this.insertedMoney += amount;
+    },
     async checkout() {
       if (this.processing) return;
       this.processing = true;
+
+      const [drinkId] = Object.keys(this.cart);
+      const quantity = this.cart[drinkId];
+
+      const total = this.totalCost;
+      if (this.insertedMoney < total) {
+        alert(`Saldo insuficiente. Faltan ₡${total - this.insertedMoney}`);
+        this.processing = false;
+        return;
+      }
+
       try {
-        for (const [id, qty] of Object.entries(this.cart)) {
-          await buyDrinkById(+id, qty);
-        }
-        alert('Compra realizada con éxito');
+        const response = await buyDrinkById({
+          drinkId: parseInt(drinkId),
+          quantity,
+          insertedMoney: this.insertedMoney
+        });
+
+        alert(`Compra realizada con éxito. Su vuelto es ₡${response.change}`);
         this.cart = {};
+        this.insertedMoney = 0;
         await this.loadDrinks();
       } catch (error) {
-        console.error(error);
-        alert('Error al procesar la compra. Verifica stock o intenta de nuevo.');
+        if (error.response?.status === 503) {
+          alert('⚠ Fuera de servicio: no hay cambio disponible.');
+        } else {
+          alert(error.response?.data?.message || 'Error al procesar la compra.');
+        }
       } finally {
         this.processing = false;
       }
@@ -132,19 +165,38 @@ export default {
   background: linear-gradient(135deg, #fbc2eb, #a6c1ee, #b2fefa);
   font-family: sans-serif;
 }
-
 .vending-machine h1 {
   text-align: center;
   margin-bottom: 1rem;
   color: #4a5568;
 }
 
-/* Siempre block: se convierte en grid sólo cuando .grid-layout está presente */
+.money-input {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.money-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.money-buttons button {
+  padding: 0.5rem 1rem;
+  background-color: #f6ad55;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.money-buttons button:hover {
+  background-color: #dd6b20;
+}
+
 .content {
   display: block;
 }
-
-/* En desktop, si tiene la clase .grid-layout, hacemos 2 columnas */
 @media (min-width: 768px) {
   .content.grid-layout {
     display: grid;
@@ -159,7 +211,6 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
 }
-
 .drink-card {
   background: #fff;
   border-radius: 1.5rem;
@@ -171,7 +222,6 @@ export default {
 .drink-card:hover {
   transform: translateY(-4px);
 }
-
 .drink-img-large {
   width: 80px;
   height: 80px;
@@ -179,7 +229,6 @@ export default {
   border-radius: 1rem;
   margin-bottom: 0.5rem;
 }
-
 .drink-info .drink-name {
   margin: 0;
   font-size: 1.1rem;
@@ -189,7 +238,6 @@ export default {
   margin: 0.25rem 0;
   color: #4a5568;
 }
-
 .buy-button {
   margin-top: 0.5rem;
   padding: 0.4rem 0.8rem;
@@ -203,7 +251,6 @@ export default {
 .buy-button:hover {
   background-color: #2c5282;
 }
-
 .selected-qty {
   margin-top: 0.25rem;
   color: #2b6cb0;
@@ -228,11 +275,9 @@ export default {
   margin: 0.25rem 0;
   color: #4a5568;
 }
-
 .total-cost {
   margin-top: 0.5rem;
 }
-
 .checkout-button {
   margin-top: 1rem;
   padding: 0.5rem 1rem;

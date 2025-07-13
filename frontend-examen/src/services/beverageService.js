@@ -7,8 +7,8 @@ export const getAvailableDrinks = async () => {
   return response.data;
 };
 
-export const buyDrinkById = async (id) => {
-  const response = await axios.post(`${API_BASE}/buy/${id}`);
+export const buyDrinkById = async (payload) => {
+  const response = await axios.post(`${API_BASE}/buy`, payload);
   return response.data;
 };
 
