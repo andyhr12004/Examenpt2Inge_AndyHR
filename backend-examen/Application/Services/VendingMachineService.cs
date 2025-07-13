@@ -21,5 +21,16 @@ namespace backend_examen.Application.Services
         {
             return _drinks;
         }
+
+        public bool BuyDrink(int id)
+        {
+            var drink = _drinks.FirstOrDefault(d => d.Id == id);
+            if (drink == null || drink.Quantity <= 0)
+                return false;
+
+            drink.Quantity--;
+            return true;
+        }
+
     }
 }

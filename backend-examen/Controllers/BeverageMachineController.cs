@@ -20,5 +20,15 @@ namespace backend_examen.Controllers
         {
             return _vendingService.GetAvailableDrinks();
         }
+
+       [HttpPost("buy/{id}")]
+        public IActionResult BuyDrink(int id)
+        {
+            var result = _vendingService.BuyDrink(id);
+            if (!result)
+                return NotFound("Refresco no encontrado o agotado.");
+
+            return Ok();
+        }
     }
 }

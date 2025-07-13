@@ -9,13 +9,16 @@
       >
         <img
           :src="getImage(drink.name)"
-          alt="pokemon"
+          :alt="drink.name"
           class="drink-img-large"
         />
         <div class="drink-info">
           <h2 class="drink-name">{{ drink.name }}</h2>
           <p class="drink-price">₡ {{ drink.price }}</p>
           <p class="drink-qty">Cantidad Disponible: {{ drink.quantity }}</p>
+          <button @click="buyDrink(drink.id)" class="buy-button">
+            Comprar
+          </button>
         </div>
       </div>
     </div>
@@ -23,14 +26,16 @@
 </template>
 
 <script>
-import { getAvailableDrinks } from '@/services/beverageService';
+import { getAvailableDrinks, buyDrinkById } from '@/services/beverageService';
 
 export default {
   data() {
-    return { drinks: [] };
+    return {
+      drinks: [],
+    };
   },
   async mounted() {
-    this.drinks = await getAvailableDrinks();
+    await this.loadDrinks();
   },
   methods: {
     getImage(name) {
@@ -42,7 +47,24 @@ export default {
         default:          return '/images/default.png';
       }
     },
-  },
+    async loadDrinks() {
+      try {
+        this.drinks = await getAvailableDrinks();
+      } catch (error) {
+        console.error('Error al cargar los refrescos:', error);
+      }
+    },
+    async buyDrink(id) {
+      try {
+        await buyDrinkById(id);
+        await this.loadDrinks();
+        alert('¡Compra realizada con éxito!');
+      } catch (error) {
+        alert('No se pudo completar la compra.');
+        console.error(error);
+      }
+    }
+  }
 };
 </script>
 
@@ -67,7 +89,6 @@ export default {
 
 .drink-card {
   background: #fff;
-  /* subimos el radio de 0.75rem a 1.5rem */
   border-radius: 1.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   padding: 1rem;
@@ -82,7 +103,6 @@ export default {
   width: 80px;
   height: 80px;
   object-fit: cover;
-  /* de 50% a 1rem para un círculo aún más suave */
   border-radius: 1rem;
   margin-bottom: 0.5rem;
 }
@@ -95,5 +115,19 @@ export default {
 .drink-info p {
   margin: 0.25rem 0;
   color: #4a5568;
+}
+
+.buy-button {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.buy-button:hover {
+  background-color: #2c5282;
 }
 </style>
